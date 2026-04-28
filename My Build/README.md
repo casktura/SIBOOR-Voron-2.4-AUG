@@ -145,6 +145,14 @@
 - Reboot: `sudo reboot`
 - Start Klipper: `sudo service klipper start`
 - Stop Klipper: `sudo service klipper stop`
+- Download file from server:
+
+    ```bash
+    scp username@remote_host:/path/to/remote/file /path/to/local/destination
+
+    # Windows example.
+    scp user@host:/remote/source/path/file C:\target\local\path\file
+    ```
 
 ## Versions
 
