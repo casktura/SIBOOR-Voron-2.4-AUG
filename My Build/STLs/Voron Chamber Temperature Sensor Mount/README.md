@@ -1,0 +1,1 @@
+- https://www.printables.com/model/473545-voron-chamber-temperature-sensor-mount

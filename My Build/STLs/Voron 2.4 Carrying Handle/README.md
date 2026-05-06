@@ -1,0 +1,1 @@
+- https://www.printables.com/model/450348-voron-24-trident-carrying-handle

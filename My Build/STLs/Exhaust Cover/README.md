@@ -1,0 +1,2 @@
+- https://mods.vorondesign.com/details/sChDLllFG34KYroxSym6MQ
+- https://github.com/VoronDesign/VoronUsers/tree/main/printer_mods/Fiction/Exhaust_cover
