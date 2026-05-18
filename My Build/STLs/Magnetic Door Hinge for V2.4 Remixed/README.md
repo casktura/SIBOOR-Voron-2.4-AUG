@@ -1,0 +1,1 @@
+- https://www.printables.com/model/359114-magnetic-door-hinge-for-v24-remixed

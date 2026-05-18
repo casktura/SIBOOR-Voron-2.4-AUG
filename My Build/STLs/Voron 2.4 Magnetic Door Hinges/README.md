@@ -1,0 +1,1 @@
+- https://www.printables.com/model/221377-voron-24-magnetic-door-hinges
