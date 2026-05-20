@@ -10,6 +10,7 @@
 - [Armbian Image](https://armbian.com/boards/bigtreetech-cb1)
 - [Cartographer 3D](https://docs.cartographer3d.com/)
 - [Sonar](https://github.com/mainsail-crew/sonar)
+- [Siboor 2.4R2 AUG](https://docs.siboor.com/siboor-2.4-r2-aug)
 
 ## Settings
 
@@ -39,10 +40,12 @@
 ## Armbian
 
 1. If Armbian firsboot config is not working properly, configure Wi-Fi with `armbian-config`.
+    - Interface: `wlan1`
+    - MAC Address: `de:84:03:e8:cd:cf`
 2. Update and install dependencies with `sudo apt update` then `sudo apt install git vim python3-serial`.
 3. Install Klipper with KIAUH.
-    - Also install NetworkManager.
-4. Update Netplan to use NetworkManager for Wi-Fi.
+    - **SKIP THIS STEP, DO NOT INSTALL NETWORKMANAGER.** Also install NetworkManager.
+4. **SKIP THIS STEP, KEEP USING SYSTEMD-NETWORKD.** Update Netplan to use NetworkManager for Wi-Fi.
     - Add NetworkManager as a renderer in file `/etc/netplan/armbian.yaml`:
         ```
         network:
@@ -143,8 +146,6 @@
     - `systemctl status systemd-networkd`
 - Check NetworkManager interfaces status: `nmcli device status`
 - Reboot: `sudo reboot`
-- Start Klipper: `sudo service klipper start`
-- Stop Klipper: `sudo service klipper stop`
 - Download file from server:
 
     ```bash
@@ -153,6 +154,20 @@
     # Windows example.
     scp user@host:/remote/source/path/file C:\target\local\path\file
     ```
+
+- Services control
+    - Services name
+        - `klipper`
+        - `sonar`
+    - Check status: `sudo service service_name status`
+    - Start: `sudo service service_name start`
+    - Stop: `sudo service service_name stop`
+- Tuning, run in Mainsail console.
+    - PID tune heated bed: `PID_CALIBRATE HEATER=heater_bed TARGET=100`
+    - PID tune hotend: `PID_CALIBRATE HEATER=extruder TARGET=245`
+- KlipperScreen
+    - Exit KlipperScreen press: `Ctrl + Alt + F1`
+    - Return to KlipperScreen press: `Ctrl + Alt + F2`
 
 ## Versions
 
