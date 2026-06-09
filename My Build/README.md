@@ -2,24 +2,20 @@
 
 ## References
 
+- [Siboor 2.4R2 AUG](https://docs.siboor.com/siboor-2.4-r2-aug)
 - [Klipper Documentation](https://www.klipper3d.org/)
 - [KIAUH](https://github.com/dw-0/kiauh)
 - [Katapult](https://github.com/Arksine/katapult)
 - [Using CAN Bus with systemd-networkd](https://maz0r.github.io/klipper_canbus/extras/systemd-networkd.html)
-- [Armbian Firstboot Config](https://docs.armbian.com/User-Guide_Autoconfig/)
 - [Armbian Image](https://armbian.com/boards/bigtreetech-cb1)
 - [Cartographer 3D](https://docs.cartographer3d.com/)
-- [Sonar](https://github.com/mainsail-crew/sonar)
-- [Siboor 2.4R2 AUG](https://docs.siboor.com/siboor-2.4-r2-aug)
+- **NOT NEEDED** [Armbian Firstboot Config](https://docs.armbian.com/User-Guide_Autoconfig/)
+- **NOT NEEDED** [Sonar](https://github.com/mainsail-crew/sonar)
 
 ## Settings
 
-- Voron 2.4R2
-    - IP Address: `192.168.68.64`
-    - Mad Address: `de:84:03:e8:cd:cf`
-- Octopus Pro: `1e691b91fae3`
-- EBB: `747323232eb7`
-- Cartographer: `14c8757f4532`
+### Armbian
+
 - Root
     - Username: `root`
     - Password: `password`
@@ -27,6 +23,18 @@
     - Name: `Armbian`
     - Username: `armbian`
     - Password: `password`
+- Locale: `en_US.UTF-8`
+- Time Zone: `Asia/Bangkok`
+- `wlan1`
+    - Mac Address: `de:84:03:e8:cd:cf`
+    - `May`
+        - IP Address: `192.168.68.64`
+
+### Klipper
+
+- Octopus Pro: `1e691b91fae3`
+- EBB: `747323232eb7`
+- Cartographer: `14c8757f4532`
 
 ## Editing File in Linux
 
@@ -39,31 +47,11 @@
 
 ## Armbian
 
-1. If Armbian firsboot config is not working properly, configure Wi-Fi with `armbian-config`.
+1. If Armbian firsboot config is not working properly, configure Wi-Fi with `armbian-config`
     - Interface: `wlan1`
     - MAC Address: `de:84:03:e8:cd:cf`
-2. Update and install dependencies with `sudo apt update` then `sudo apt install git vim python3-serial`.
-3. Install Klipper with KIAUH.
-    - **SKIP THIS STEP, DO NOT INSTALL NETWORKMANAGER.** Also install NetworkManager.
-4. **SKIP THIS STEP, KEEP USING SYSTEMD-NETWORKD.** Update Netplan to use NetworkManager for Wi-Fi.
-    - Add NetworkManager as a renderer in file `/etc/netplan/armbian.yaml`:
-        ```
-        network:
-        version: 2
-        renderer: networkd
-        wifis:
-            wlan1:
-            renderer: NetworkManager
-            dhcp4: true
-            dhcp6: true
-            macaddress: "de:84:03:e8:cd:cf"
-            access-points:
-                "May":
-                auth:
-                    key-management: "psk"
-                    password: "0892335770"
-        ```
-5. Set up CAN bus in networkd:
+2. Update and install dependencies with `sudo apt update` then `sudo apt install git vim python3-serial`
+3. Set up CAN bus in networkd:
     - Check if your systemd supports CAN bus: `systemctl --version`, systemd with version 239 or higher is good to go.
     - Add settings below to file `/etc/systemd/network/80-can.network`:
 
@@ -85,17 +73,34 @@
         TransmitQueueLength=128
         ```
 
-    - Restart networkd: `sudo systemctl restart systemd-networkd`
-    - Check networkd status: `sudo systemctl status systemd-networkd`
+    - Reboot: `sudo reboot`
+    - Check systemd-networkd status: `sudo systemctl status systemd-networkd`
     - Check queue length: `ip link show can0`, continue below if qlen is not 128.
-    - Add settings below to file `/etc/udev/rules.d/99-canbus.rules`:
+        - Add settings below to file `/etc/udev/rules.d/99-canbus.rules`:
 
-        ```
-        # Set tx queue size for CAN bus.
-        SUBSYSTEM=="net", ACTION=="add|change", KERNEL=="can0" ATTR{tx_queue_len}="128"
-        ```
+            ```
+            # Set tx queue size for CAN bus.
+            SUBSYSTEM=="net", ACTION=="add|change", KERNEL=="can0" ATTR{tx_queue_len}="128"
+            ```
 
-    - Reboot
+        - Reboot
+
+4. Install Klipper with [KIAUH](https://github.com/dw-0/kiauh):
+    - `cd ~ && git clone https://github.com/dw-0/kiauh.git`
+    - `./kiauh/kiauh.sh`
+    - Then install components in order:
+        1. Klipper
+        2. Moonraker
+        3. Mainsail
+        4. KlipperScreen
+            - **Skip NetworkManager.**
+        5. Advanced/Input Shaper
+5. Install [Cartographer3D](https://docs.cartographer3d.com/cartographer-probe/installation-and-setup/software-configuration/klipper-setup) Klipper plugin.
+    ```bash
+    curl -s -L https://raw.githubusercontent.com/Cartographer3D/cartographer3d-plugin/refs/heads/main/scripts/install.sh | bash -s -- --klipper ~/klipper --klippy-env ~/klippy-env
+    ```
+6. Clone Cartographer3D firmware repository: `git clone https://github.com/Cartographer3D/cartographer_firmware.git`
+7. Clone Katapult: `git clone https://github.com/Arksine/katapult`
 
 ## Katapult & Klipper
 
@@ -109,16 +114,16 @@
 1. Enter Octopus Pro DFU mode using CAN bus:
 
     ```
-    ~/klippy-env/bin/python ~/katapult/scripts/flashtool.py -i can0 -f octopus_klipper.bin -u 1e691b91fae3 -r
+    ~/klippy-env/bin/python ~/katapult/scripts/flashtool.py -i can0 -u 1e691b91fae3 -r -f octopus_klipper.bin
     ```
 
 2. Flash Klipper:
 
     ```
-    ~/klippy-env/bin/python ~/katapult/scripts/flashtool.py -f octopus_klipper.bin -d <serial/device/path>
+    ~/klippy-env/bin/python ~/katapult/scripts/flashtool.py -d <serial/device/path> -f octopus_klipper.bin
     ```
 
-    Sometimes, serial device path can be seen from the result of step 1.
+    Sometimes, serial device path can be seen from the result of step 1, for example `/dev/ttyACM0`.
 
 3. You can also flash Katapult using make itself:
 
@@ -128,10 +133,10 @@
 
     Look for flash device using `lsusb`.
 
-### EBB
+### EBB SB2209 CAN RP2040
 
 ```
-~/klippy-env/bin/python ~/katapult/scripts/flash_can.py -i can0 -f ebb_klipper.bin -u 747323232eb7
+~/klippy-env/bin/python ~/katapult/scripts/flash_can.py -i can0 -u 747323232eb7 -f ebb_klipper.bin
 ```
 
 ## Commands

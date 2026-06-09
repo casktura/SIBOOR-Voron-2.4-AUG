@@ -1,0 +1,1 @@
+- https://mellow.klipper.cn/en/docs/ProductDoc/ExtensionBoard/fly-sb-led/wiring
