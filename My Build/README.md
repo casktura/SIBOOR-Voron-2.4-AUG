@@ -6,8 +6,10 @@
 - [Klipper Documentation](https://www.klipper3d.org/)
 - [KIAUH](https://github.com/dw-0/kiauh)
 - [Katapult](https://github.com/Arksine/katapult)
+- [Esoterical’s CANBus Guide](https://canbus.esoterical.online/)
 - [Using CAN Bus with systemd-networkd](https://maz0r.github.io/klipper_canbus/extras/systemd-networkd.html)
-- [Armbian Image](https://armbian.com/boards/bigtreetech-cb1)
+- [Armbian](https://armbian.com/boards/bigtreetech-cb1)
+- [BTT CB1](https://github.com/bigtreetech/CB1)
 - [Cartographer 3D](https://docs.cartographer3d.com/)
 - **NOT NEEDED** [Armbian Firstboot Config](https://docs.armbian.com/User-Guide_Autoconfig/)
 - **NOT NEEDED** [Sonar](https://github.com/mainsail-crew/sonar)
@@ -23,11 +25,27 @@
     - Name: `Armbian`
     - Username: `armbian`
     - Password: `password`
-- Locale: `en_US.UTF-8`
 - Time Zone: `Asia/Bangkok`
+- Locale: `en_US.UTF-8`
 - `wlan1`
     - Mac Address: `de:84:03:e8:cd:cf`
-    - `May`
+    - `May`: `0892335770`
+        - IP Address: `192.168.68.64`
+
+### BTT CB1
+
+- Root
+    - Username: `root`
+    - Password: `password`
+- User
+    - Name: `Armbian`
+    - Username: `armbian`
+    - Password: `password`
+- Time Zone: `Asia/Bangkok`
+- Locale: `en_US.UTF-8`, manually set your language, do not select based on location.
+- Wi-Fi:
+    - Mac Address: `dc:84:03:e8:cf:cf`
+    - `May`: `0892335770`
         - IP Address: `192.168.68.64`
 
 ### Klipper
@@ -47,7 +65,7 @@
 
 ## Armbian
 
-1. If Armbian firsboot config is not working properly, configure Wi-Fi with `armbian-config`
+1. Configure Wi-Fi with `armbian-config`
     - Interface: `wlan1`
     - MAC Address: `de:84:03:e8:cd:cf`
 2. Update and install dependencies with `sudo apt update` then `sudo apt install git vim python3-serial`
@@ -85,7 +103,27 @@
 
         - Reboot
 
-4. Install Klipper with [KIAUH](https://github.com/dw-0/kiauh):
+## BTT CB1
+
+1. Configure Wi-Fi and other settings according to settings section.
+2. Update and install dependencies with `sudo apt update` then `sudo apt install git vim python3-serial`
+3. Set up CAN bus in ifconfig:
+    - Check if your system is running ifconfig: `ifcong`
+    - Add settings below to file `/etc/network/interfaces.d/can0`:
+
+        ```
+        allow-hotplug can0
+        iface can0 can static
+            bitrate 1000000
+            up ip link set $IFACE txqueuelen 128
+        ```
+
+    - Reset can0 interface: `sudo ifdown can0 && sudo ifup can0`
+    - Check check interface status and queue length: `ip link show can0`
+
+## Klipper
+
+1. Install Klipper with [KIAUH](https://github.com/dw-0/kiauh):
     - `cd ~ && git clone https://github.com/dw-0/kiauh.git`
     - `./kiauh/kiauh.sh`
     - Then install components in order:
@@ -93,16 +131,16 @@
         2. Moonraker
         3. Mainsail
         4. KlipperScreen
-            - **Skip NetworkManager.**
+            - **Skip NetworkManager if using Armbian.**
         5. Advanced/Input Shaper
-5. Install [Cartographer3D](https://docs.cartographer3d.com/cartographer-probe/installation-and-setup/software-configuration/klipper-setup) Klipper plugin.
+2. Install [Cartographer3D](https://docs.cartographer3d.com/cartographer-probe/installation-and-setup/software-configuration/klipper-setup) Klipper plugin.
     ```bash
     curl -s -L https://raw.githubusercontent.com/Cartographer3D/cartographer3d-plugin/refs/heads/main/scripts/install.sh | bash -s -- --klipper ~/klipper --klippy-env ~/klippy-env
     ```
-6. Clone Cartographer3D firmware repository: `git clone https://github.com/Cartographer3D/cartographer_firmware.git`
-7. Clone Katapult: `git clone https://github.com/Arksine/katapult`
+3. Clone Cartographer3D firmware repository: `git clone https://github.com/Cartographer3D/cartographer_firmware.git`
+4. Clone Katapult: `git clone https://github.com/Arksine/katapult`
 
-## Katapult & Klipper
+## Make Katapult & Klipper
 
 - To configure: `make menuconfig`
 - To make: `make`
@@ -167,6 +205,7 @@
     - Check status: `sudo service service_name status`
     - Start: `sudo service service_name start`
     - Stop: `sudo service service_name stop`
+    - List running services: `sudo systemctl list-units --type=service --state=running`
 - Tuning, run in Mainsail console.
     - PID tune heated bed: `PID_CALIBRATE HEATER=heater_bed TARGET=100`
     - PID tune hotend: `PID_CALIBRATE HEATER=extruder TARGET=245`
